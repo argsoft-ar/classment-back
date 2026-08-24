@@ -17,8 +17,8 @@ export const updateGradeSchema = z.object({
 });
 
 export const findOrCreateGradeSchema = z.object({
-  studentId: z.string().length(24),
-  subjectId: z.string().length(24),
+  studentId: z.string().min(1),
+  subjectId: z.string().min(1),
   academicYear: z.number().int().min(2000),
 });
 

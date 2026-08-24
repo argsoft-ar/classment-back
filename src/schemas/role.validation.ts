@@ -1,17 +1,17 @@
 import { z } from "zod";
 
 export const createRoleSchema = z.object({
-  userId: z.string().length(24),
-  institutionId: z.string().length(24),
+  userId: z.string().min(1),
+  institutionId: z.string().min(1),
   level: z.enum(["Directivo", "Preceptor", "Docente", "Alumno"]),
-  assignedCourses: z.array(z.string().length(24)).optional(),
-  assignedSubjects: z.array(z.string().length(24)).optional(),
+  assignedCourses: z.array(z.string().min(1)).optional(),
+  assignedSubjects: z.array(z.string().min(1)).optional(),
 });
 
 export const updateRoleSchema = z.object({
   level: z.enum(["Directivo", "Preceptor", "Docente", "Alumno"]).optional(),
-  assignedCourses: z.array(z.string().length(24)).optional(),
-  assignedSubjects: z.array(z.string().length(24)).optional(),
+  assignedCourses: z.array(z.string().min(1)).optional(),
+  assignedSubjects: z.array(z.string().min(1)).optional(),
   isActive: z.boolean().optional(),
 });
 

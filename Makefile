@@ -47,6 +47,9 @@ db-reset:
 db-studio:
 	npx prisma studio
 
+db-seed:
+	npx prisma db seed
+
 # ── Combinados ───────────────────────────────────────────────────────────────
 
 # Levanta Postgres y aplica migraciones pendientes
@@ -79,6 +82,7 @@ help:
 	@echo "    make db-push     Sincroniza schema sin migraciones (dev rápido)"
 	@echo "    make db-reset    Resetea la DB y re-aplica todas las migraciones"
 	@echo "    make db-studio   Abre Prisma Studio en el browser"
+	@echo "    make db-seed     Ejecuta el seed de datos iniciales"
 	@echo ""
 	@echo "  Combinados"
 	@echo "    make setup       up + db-migrate + db-generate"

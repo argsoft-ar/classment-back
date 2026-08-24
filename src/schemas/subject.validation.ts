@@ -2,15 +2,15 @@ import { z } from "zod";
 
 export const createSubjectSchema = z.object({
   name: z.string().min(1),
-  courseId: z.string().length(24),
-  teacherId: z.string().length(24),
-  institutionId: z.string().length(24),
+  courseId: z.string().min(1),
+  teacherId: z.string().min(1),
+  institutionId: z.string().min(1),
   academicYear: z.number().int().min(2000),
 });
 
 export const updateSubjectSchema = z.object({
   name: z.string().min(1).optional(),
-  teacherId: z.string().length(24).optional(),
+  teacherId: z.string().min(1).optional(),
   isActive: z.boolean().optional(),
 });
 

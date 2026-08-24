@@ -7,13 +7,13 @@ const attendanceValueSchema = z.union([
 ]);
 
 const attendanceEntrySchema = z.object({
-  studentId: z.string().length(24),
+  studentId: z.string().min(1),
   value: attendanceValueSchema,
 });
 
 export const createAttendanceSchema = z.object({
-  courseId: z.string().length(24),
-  institutionId: z.string().length(24),
+  courseId: z.string().min(1),
+  institutionId: z.string().min(1),
   date: z.string().datetime(),
   entries: z.array(attendanceEntrySchema).min(1),
 });

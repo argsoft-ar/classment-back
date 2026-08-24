@@ -1,7 +1,7 @@
 ## 1. Contexto del Proyecto y Stack Tecnológico
 
 El proyecto se llama "Classment" y es un sistema SaaS multitenant de gestión académica, comenzando por el módulo de Educación Secundaria.
-El stack tecnológico a utilizar será **React con TypeScript** para el frontend, un backend modular (Node.js/Next.js) con tipado estricto, y una base de datos orientada a documentos (ej. MongoDB). El sistema debe estar preparado para un despliegue continuo en plataformas de la nube como Vercel.
+El stack tecnológico a utilizar será **React con TypeScript** para el frontend, un backend modular (Node.js/Next.js) con tipado estricto, y una base de datos orientada a documentos. El sistema debe estar preparado para un despliegue continuo en plataformas de la nube como Vercel.
 La arquitectura debe ser estrictamente modular. En esta fase solo se desarrollará la lógica de secundaria, pero la base de datos debe contemplar un campo `institution_type` para aislar futuras lógicas de nivel terciario.
 
 ## 2. Modelos de Datos Principales

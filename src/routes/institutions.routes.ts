@@ -19,7 +19,7 @@ router.post(
   institutionsController.create,
 );
 
-router.get("/", authMiddleware, institutionsController.findAll);
+router.get("/", institutionsController.findAll);
 
 router.get("/:id", authMiddleware, institutionsController.findById);
 

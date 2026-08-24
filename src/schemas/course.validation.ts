@@ -5,13 +5,13 @@ export const createCourseSchema = z.object({
   year: z.number().int().min(1).max(7),
   division: z.string().min(1),
   academicYear: z.number().int().min(2000),
-  institutionId: z.string().length(24),
-  students: z.array(z.string().length(24)).optional(),
+  institutionId: z.string().min(1),
+  students: z.array(z.string().min(1)).optional(),
 });
 
 export const updateCourseSchema = z.object({
   name: z.string().min(1).optional(),
-  students: z.array(z.string().length(24)).optional(),
+  students: z.array(z.string().min(1)).optional(),
   isActive: z.boolean().optional(),
 });
 
