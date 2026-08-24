@@ -1,0 +1,16 @@
+version: "3.8"
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: classment-postgres
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: classment
+      POSTGRES_PASSWORD: classment_pass
+      POSTGRES_DB: classment
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

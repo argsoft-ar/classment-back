@@ -1,0 +1,281 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum InstitutionType {
+  secondary
+  tertiary
+}
+
+enum RoleLevel {
+  Directivo
+  Preceptor
+  Docente
+  Alumno
+}
+
+enum CycleStatus {
+  Promovido
+  Repite
+  Egresado
+  EnCurso
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  dni       String   @unique
+  firstName String
+  lastName  String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  roles               Role[]
+  taughtSubjects      Subject[]              @relation("TeacherSubjects")
+  courseEnrollments   CourseStudent[]
+  attendanceEntries   AttendanceEntry[]      @relation("StudentAttendanceEntries")
+  recordedAttendances AttendanceSession[]    @relation("AttendanceRecorder")
+  studentGrades       Grade[]                @relation("StudentGrades")
+  sentMessages        Message[]              @relation("MessageSender")
+  messageReads        MessageRead[]
+  gradeModifications  GradeModificationLog[] @relation("GradeModifier")
+  academicRecords     AcademicRecord[]       @relation("StudentAcademicRecords")
+}
+
+model Institution {
+  id                 String          @id @default(cuid())
+  name               String
+  cue                String          @unique
+  address            String
+  institutionType    InstitutionType @default(secondary)
+  activeAcademicYear Int
+  gradingPeriodOpen  Boolean         @default(false)
+  isActive           Boolean         @default(true)
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  roles              Role[]
+  courses            Course[]
+  subjects           Subject[]
+  attendanceSessions AttendanceSession[]
+  grades             Grade[]
+  academicRecords    AcademicRecord[]
+  messages           Message[]
+}
+
+model Role {
+  id            String    @id @default(cuid())
+  userId        String
+  institutionId String
+  level         RoleLevel
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  user             User          @relation(fields: [userId], references: [id])
+  institution      Institution   @relation(fields: [institutionId], references: [id])
+  assignedCourses  RoleCourse[]
+  assignedSubjects RoleSubject[]
+
+  @@unique([userId, institutionId])
+}
+
+model RoleCourse {
+  roleId   String
+  courseId String
+
+  role   Role   @relation(fields: [roleId], references: [id])
+  course Course @relation(fields: [courseId], references: [id])
+
+  @@id([roleId, courseId])
+}
+
+model RoleSubject {
+  roleId    String
+  subjectId String
+
+  role    Role    @relation(fields: [roleId], references: [id])
+  subject Subject @relation(fields: [subjectId], references: [id])
+
+  @@id([roleId, subjectId])
+}
+
+model Course {
+  id            String   @id @default(cuid())
+  name          String
+  year          Int
+  division      String
+  academicYear  Int
+  institutionId String
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  institution        Institution        @relation(fields: [institutionId], references: [id])
+  students           CourseStudent[]
+  subjects           Subject[]
+  attendanceSessions AttendanceSession[]
+  academicRecords    AcademicRecord[]
+  roleAssignments    RoleCourse[]
+  targetedMessages   Message[]          @relation("CourseMessages")
+}
+
+model CourseStudent {
+  courseId String
+  userId   String
+
+  course Course @relation(fields: [courseId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@id([courseId, userId])
+}
+
+model Subject {
+  id            String   @id @default(cuid())
+  name          String
+  courseId      String
+  teacherId     String
+  institutionId String
+  academicYear  Int
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  course          Course                 @relation(fields: [courseId], references: [id])
+  teacher         User                   @relation("TeacherSubjects", fields: [teacherId], references: [id])
+  institution     Institution            @relation(fields: [institutionId], references: [id])
+  grades          Grade[]
+  previaRecords   AcademicRecordPrevia[]
+  roleAssignments RoleSubject[]
+}
+
+model AcademicRecord {
+  id            String      @id @default(cuid())
+  studentId     String
+  institutionId String
+  courseId      String
+  academicYear  Int
+  cycleStatus   CycleStatus @default(EnCurso)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  student     User        @relation("StudentAcademicRecords", fields: [studentId], references: [id])
+  institution Institution @relation(fields: [institutionId], references: [id])
+  course      Course      @relation(fields: [courseId], references: [id])
+  previas     AcademicRecordPrevia[]
+
+  @@unique([studentId, institutionId, academicYear])
+}
+
+model AcademicRecordPrevia {
+  academicRecordId String
+  subjectId        String
+
+  academicRecord AcademicRecord @relation(fields: [academicRecordId], references: [id])
+  subject        Subject        @relation(fields: [subjectId], references: [id])
+
+  @@id([academicRecordId, subjectId])
+}
+
+model AttendanceSession {
+  id            String   @id @default(cuid())
+  courseId      String
+  institutionId String
+  date          DateTime @db.Date
+  recordedById  String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  course      Course      @relation(fields: [courseId], references: [id])
+  institution Institution @relation(fields: [institutionId], references: [id])
+  recordedBy  User        @relation("AttendanceRecorder", fields: [recordedById], references: [id])
+  entries     AttendanceEntry[]
+
+  @@unique([courseId, date])
+}
+
+model AttendanceEntry {
+  id                  String @id @default(cuid())
+  attendanceSessionId String
+  studentId           String
+  value               Float
+
+  session AttendanceSession @relation(fields: [attendanceSessionId], references: [id])
+  student User              @relation("StudentAttendanceEntries", fields: [studentId], references: [id])
+
+  @@unique([attendanceSessionId, studentId])
+}
+
+model Grade {
+  id            String @id @default(cuid())
+  studentId     String
+  subjectId     String
+  institutionId String
+  academicYear  Int
+
+  firstQuarterPreInforme        String  @default("")
+  firstQuarterExcludeFromReport Boolean @default(false)
+  firstQuarterFinalGrade        Float?
+
+  secondQuarterPreInforme        String  @default("")
+  secondQuarterExcludeFromReport Boolean @default(false)
+  secondQuarterFinalGrade        Float?
+
+  finalYearGrade Float?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  student         User                   @relation("StudentGrades", fields: [studentId], references: [id])
+  subject         Subject                @relation(fields: [subjectId], references: [id])
+  institution     Institution            @relation(fields: [institutionId], references: [id])
+  modificationLog GradeModificationLog[]
+
+  @@unique([studentId, subjectId, academicYear])
+}
+
+model GradeModificationLog {
+  id            String   @id @default(cuid())
+  gradeId       String
+  modifiedById  String
+  previousValue Json
+  newValue      Json
+  modifiedAt    DateTime @default(now())
+
+  grade      Grade @relation(fields: [gradeId], references: [id])
+  modifiedBy User  @relation("GradeModifier", fields: [modifiedById], references: [id])
+}
+
+model Message {
+  id             String   @id @default(cuid())
+  title          String
+  body           String
+  senderId       String
+  institutionId  String
+  targetCourseId String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  sender       User        @relation("MessageSender", fields: [senderId], references: [id])
+  institution  Institution @relation(fields: [institutionId], references: [id])
+  targetCourse Course?     @relation("CourseMessages", fields: [targetCourseId], references: [id])
+  reads        MessageRead[]
+}
+
+model MessageRead {
+  messageId String
+  userId    String
+  readAt    DateTime @default(now())
+
+  message Message @relation(fields: [messageId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@id([messageId, userId])
+}
