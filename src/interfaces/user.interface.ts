@@ -1,13 +1,12 @@
-export interface IUser {
-  id: string;
-  email: string;
-  password: string;
-  dni: string;
-  firstName: string;
-  lastName: string;
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+export type UserRoleValue = "SuperAdmin" | "Directivo" | "Docente" | "Alumno";
+export type UserStatusValue = "INVITED" | "ACTIVE" | "INACTIVE";
+
+export interface IUserCareer {
+  studyPlanId: string;
+  studyPlanCode: string;
+  careerId: string;
+  careerName: string;
+  cohortYear: number;
 }
 
 export interface IUserPublic {
@@ -16,5 +15,13 @@ export interface IUserPublic {
   dni: string;
   firstName: string;
   lastName: string;
-  isActive: boolean;
+  role: UserRoleValue;
+  status: UserStatusValue;
+  careers: IUserCareer[];
+  createdAt: Date;
+}
+
+export interface ILoginResult {
+  token: string;
+  user: Pick<IUserPublic, "id" | "email" | "firstName" | "lastName" | "role">;
 }

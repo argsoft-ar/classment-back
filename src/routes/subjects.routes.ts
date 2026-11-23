@@ -2,62 +2,56 @@ import { Router } from "express";
 import { subjectsController } from "../controllers/subjects.controller";
 import { authMiddleware } from "../middlewares/auth.middleware";
 import { rbacMiddleware } from "../middlewares/rbac.middleware";
-import { validateBody } from "../middlewares/validation.middleware";
+import {
+  validateBody,
+  validateParams,
+  validateQuery,
+} from "../middlewares/validation.middleware";
 import {
   createSubjectSchema,
+  listSubjectsQuerySchema,
   updateSubjectSchema,
 } from "../schemas/subject.validation";
-import { RoleLevel } from "../types/rbac.types";
+import { idParamSchema } from "../schemas/common.validation";
+import { ADMIN_ROLES, ALL_ROLES } from "../types/rbac.types";
 
 const router = Router();
 
 router.use(authMiddleware);
 
+router.get(
+  "/",
+  rbacMiddleware(...ALL_ROLES),
+  validateQuery(listSubjectsQuerySchema),
+  subjectsController.findByCareer,
+);
+
 router.post(
   "/",
-  rbacMiddleware(RoleLevel.DIRECTIVO),
+  rbacMiddleware(...ADMIN_ROLES),
   validateBody(createSubjectSchema),
   subjectsController.create,
 );
 
 router.get(
-  "/course/:courseId",
-  rbacMiddleware(
-    RoleLevel.DIRECTIVO,
-    RoleLevel.PRECEPTOR,
-    RoleLevel.DOCENTE,
-    RoleLevel.ALUMNO,
-  ),
-  subjectsController.findByCourse,
-);
-
-router.get(
-  "/teacher/:teacherId",
-  rbacMiddleware(RoleLevel.DIRECTIVO, RoleLevel.DOCENTE),
-  subjectsController.findByTeacher,
-);
-
-router.get(
   "/:id",
-  rbacMiddleware(
-    RoleLevel.DIRECTIVO,
-    RoleLevel.PRECEPTOR,
-    RoleLevel.DOCENTE,
-    RoleLevel.ALUMNO,
-  ),
+  rbacMiddleware(...ALL_ROLES),
+  validateParams(idParamSchema),
   subjectsController.findById,
 );
 
 router.patch(
   "/:id",
-  rbacMiddleware(RoleLevel.DIRECTIVO),
+  rbacMiddleware(...ADMIN_ROLES),
+  validateParams(idParamSchema),
   validateBody(updateSubjectSchema),
   subjectsController.update,
 );
 
 router.delete(
   "/:id",
-  rbacMiddleware(RoleLevel.DIRECTIVO),
+  rbacMiddleware(...ADMIN_ROLES),
+  validateParams(idParamSchema),
   subjectsController.deactivate,
 );
 

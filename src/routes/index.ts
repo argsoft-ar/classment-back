@@ -1,26 +1,26 @@
 import { Router } from "express";
 import authRoutes from "./auth.routes";
+import institutionRoutes from "./institution.routes";
 import usersRoutes from "./users.routes";
-import institutionsRoutes from "./institutions.routes";
-import rolesRoutes from "./roles.routes";
-import coursesRoutes from "./courses.routes";
+import careersRoutes from "./careers.routes";
 import subjectsRoutes from "./subjects.routes";
+import correlativesRoutes from "./correlatives.routes";
 import academicRecordsRoutes from "./academic-records.routes";
-import attendanceRoutes from "./attendance.routes";
-import gradesRoutes from "./grades.routes";
-import messagingRoutes from "./messaging.routes";
+import enrollmentPeriodsRoutes from "./enrollment-periods.routes";
+import offeringsRoutes from "./offerings.routes";
+import enrollmentsRoutes from "./enrollments.routes";
 
 const router = Router();
 
 router.use("/auth", authRoutes);
+router.use("/institution", institutionRoutes);
 router.use("/users", usersRoutes);
-router.use("/institutions", institutionsRoutes);
-router.use("/roles", rolesRoutes);
-router.use("/courses", coursesRoutes);
+router.use("/careers", careersRoutes);
 router.use("/subjects", subjectsRoutes);
+router.use("/correlatives", correlativesRoutes);
 router.use("/academic-records", academicRecordsRoutes);
-router.use("/attendance", attendanceRoutes);
-router.use("/grades", gradesRoutes);
-router.use("/messages", messagingRoutes);
+router.use("/enrollment-periods", enrollmentPeriodsRoutes);
+router.use("/offerings", offeringsRoutes);
+router.use("/enrollments", enrollmentsRoutes);
 
 export default router;

@@ -1,4 +1,4 @@
-.PHONY: up down restart dev build start \
+.PHONY: up down restart dev build start test \
         db-generate db-migrate db-push db-reset db-studio db-seed \
         install lint help
 
@@ -29,6 +29,9 @@ start:
 
 lint:
 	npm run lint
+
+test:
+	npm test
 
 # ── Database ─────────────────────────────────────────────────────────────────
 
@@ -75,6 +78,7 @@ help:
 	@echo "    make build       Compila TypeScript"
 	@echo "    make start       Ejecuta el build compilado"
 	@echo "    make lint        Corre ESLint"
+	@echo "    make test        Corre los tests (Vitest)"
 	@echo ""
 	@echo "  Base de datos"
 	@echo "    make db-generate Genera el cliente Prisma"

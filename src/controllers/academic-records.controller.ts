@@ -1,71 +1,39 @@
 import { Request, Response, NextFunction } from "express";
 import { academicRecordsService } from "../services/academic-records.service";
 import { sendSuccess } from "../utils/response.utils";
+import { requireUser } from "../utils/access.utils";
 
 export const academicRecordsController = {
-  async create(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async findMine(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const record = await academicRecordsService.create(req.body);
-      sendSuccess(res, record, "Academic record created", 201);
+      const actor = requireUser(req.user);
+      const progress = await academicRecordsService.getStudentProgress(actor.userId, actor);
+      sendSuccess(res, progress);
     } catch (err) {
       next(err);
     }
   },
 
-  async findByStudent(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> {
+  async findByStudent(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const records = await academicRecordsService.findByStudent(
+      const progress = await academicRecordsService.getStudentProgress(
         req.params["studentId"] as string,
+        requireUser(req.user),
       );
-      sendSuccess(res, records);
+      sendSuccess(res, progress);
     } catch (err) {
       next(err);
     }
   },
 
-  async findByCourse(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> {
+  async bulkUpsert(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const academicYear = parseInt(req.query["academicYear"] as string, 10);
-      const records = await academicRecordsService.findByCourse(
-        req.params["courseId"] as string,
-        academicYear,
-      );
-      sendSuccess(res, records);
-    } catch (err) {
-      next(err);
-    }
-  },
-
-  async findById(
-    req: Request,
-    res: Response,
-    next: NextFunction,
-  ): Promise<void> {
-    try {
-      const record = await academicRecordsService.findById(
-        req.params["id"] as string,
-      );
-      sendSuccess(res, record);
-    } catch (err) {
-      next(err);
-    }
-  },
-
-  async update(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const record = await academicRecordsService.update(
-        req.params["id"] as string,
+      const progress = await academicRecordsService.bulkUpsert(
+        req.params["studentId"] as string,
         req.body,
+        requireUser(req.user),
       );
-      sendSuccess(res, record);
+      sendSuccess(res, progress, "Academic records updated");
     } catch (err) {
       next(err);
     }

@@ -1,19 +1,20 @@
 import { z } from "zod";
+import { addressString, codeString, nameString } from "./common.validation";
 
-export const createInstitutionSchema = z.object({
-  name: z.string().min(1),
-  cue: z.string().min(1),
-  address: z.string().min(1),
-  institutionType: z.enum(["secondary", "tertiary"]).default("secondary"),
-  activeAcademicYear: z.number().int().min(2000),
-});
+export const updateInstitutionSchema = z
+  .object({
+    name: nameString,
+    cue: codeString,
+    address: addressString,
+    allowsPromotion: z.boolean(),
+    passingGrade: z.number().int().min(1).max(10),
+    promotionGrade: z.number().int().min(1).max(10).nullable(),
+    validateFinalCorrelatives: z.boolean(),
+  })
+  .partial()
+  .strict()
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "At least one field is required",
+  });
 
-export const updateInstitutionSchema = z.object({
-  name: z.string().min(1).optional(),
-  address: z.string().min(1).optional(),
-  activeAcademicYear: z.number().int().min(2000).optional(),
-  gradingPeriodOpen: z.boolean().optional(),
-});
-
-export type CreateInstitutionInput = z.infer<typeof createInstitutionSchema>;
 export type UpdateInstitutionInput = z.infer<typeof updateInstitutionSchema>;

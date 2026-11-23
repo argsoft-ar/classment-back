@@ -1,13 +1,13 @@
 import { authPaths } from "./paths/auth.paths";
+import { institutionPaths } from "./paths/institution.paths";
 import { usersPaths } from "./paths/users.paths";
-import { institutionsPaths } from "./paths/institutions.paths";
-import { rolesPaths } from "./paths/roles.paths";
-import { coursesPaths } from "./paths/courses.paths";
+import { careersPaths } from "./paths/careers.paths";
 import { subjectsPaths } from "./paths/subjects.paths";
+import { correlativesPaths } from "./paths/correlatives.paths";
 import { academicRecordsPaths } from "./paths/academic-records.paths";
-import { attendancePaths } from "./paths/attendance.paths";
-import { gradesPaths } from "./paths/grades.paths";
-import { messagingPaths } from "./paths/messaging.paths";
+import { enrollmentPeriodsPaths } from "./paths/enrollment-periods.paths";
+import { offeringsPaths } from "./paths/offerings.paths";
+import { enrollmentsPaths } from "./paths/enrollments.paths";
 import { componentSchemas } from "./components/schemas";
 import { commonResponses } from "./components/responses";
 
@@ -17,28 +17,26 @@ export const swaggerSpec = {
     title: "Classment API",
     version: "1.0.0",
     description: `
-## Sistema SaaS de Gestión Académica — Módulo Secundaria
+## Classment — Gestión Académica Nivel Terciario (Fase 0 · Demo Comercial)
+
+Instalación de **institución única**: la configuración (nota de aprobación, validación de correlativas en finales, etc.) se lee de \`GET /institution\`.
 
 ### Autenticación
-Todos los endpoints (excepto \`/auth\`) requieren un **Bearer JWT** en el header:
+Todos los endpoints (excepto \`POST /auth/login\`) requieren un **Bearer JWT**:
 \`\`\`
 Authorization: Bearer <token>
 \`\`\`
 
-### Roles disponibles
+### Roles
 | Rol | Descripción |
 |-----|-------------|
-| **Directivo** | Acceso total. Abre/cierra períodos de calificación. |
-| **Preceptor** | Gestiona asistencia y comunicados de sus cursos. |
-| **Docente** | Carga calificaciones de sus materias (período abierto). |
-| **Alumno** | Solo lectura de su información académica. |
+| **SuperAdmin** | Todo lo del Directivo + configuración institucional y alta de Directivos. |
+| **Directivo** | Carreras, materias, correlatividades, alumnos, historial ("Día Cero"), períodos y ofertas. |
+| **Docente** | Lectura de sus ofertas asignadas y nómina de inscriptos. |
+| **Alumno** | Su avance, oferta disponible (validada por el motor) e inscripciones/bajas propias. |
 
-### Convención de asistencia
-| Valor | Significado |
-|-------|-------------|
-| \`0\` | Presente |
-| \`0.5\` | Tarde (media falta) |
-| \`1\` | Ausente |
+### Motor de correlatividades
+Las inscripciones rechazadas responden **422** con \`errors: { allowed: false, reasons: RejectionReason[] }\` listando **todos** los motivos.
     `,
     contact: { name: "ArgSoft", email: "dev@argsoft.ar" },
   },
@@ -46,34 +44,28 @@ Authorization: Bearer <token>
     { url: "http://localhost:3000/api/v1", description: "Desarrollo local" },
   ],
   tags: [
-    { name: "Auth", description: "Registro e inicio de sesión" },
-    { name: "Users", description: "Gestión de usuarios" },
-    {
-      name: "Institutions",
-      description: "Gestión de instituciones y períodos de calificación",
-    },
-    { name: "Roles", description: "Asignación de roles por institución" },
-    { name: "Courses", description: "Gestión de cursos y alumnos" },
-    { name: "Subjects", description: "Gestión de materias por curso" },
-    {
-      name: "Academic Records",
-      description: "Historial académico y materias previas",
-    },
-    { name: "Attendance", description: "Registro diario de asistencia" },
-    { name: "Grades", description: "Calificaciones por cuatrimestre" },
-    { name: "Messaging", description: "Tablón de anuncios institucional" },
+    { name: "Auth", description: "Inicio de sesión y alta administrada" },
+    { name: "Institution", description: "Configuración de la institución" },
+    { name: "Users", description: "Usuarios (Directivos, Docentes, Alumnos)" },
+    { name: "Careers", description: "Carreras y plan de estudios" },
+    { name: "Subjects", description: "Materias anuales" },
+    { name: "Correlatives", description: "Reglas de correlatividad (con detección de ciclos)" },
+    { name: "Academic Records", description: "Avance del alumno y grilla \"Día Cero\"" },
+    { name: "Enrollment Periods", description: "Períodos de cursada y turnos de final" },
+    { name: "Offerings", description: "Cursadas y mesas ofrecidas por período" },
+    { name: "Enrollments", description: "Inscripciones y bajas del alumno" },
   ],
   paths: {
     ...authPaths,
+    ...institutionPaths,
     ...usersPaths,
-    ...institutionsPaths,
-    ...rolesPaths,
-    ...coursesPaths,
+    ...careersPaths,
     ...subjectsPaths,
+    ...correlativesPaths,
     ...academicRecordsPaths,
-    ...attendancePaths,
-    ...gradesPaths,
-    ...messagingPaths,
+    ...enrollmentPeriodsPaths,
+    ...offeringsPaths,
+    ...enrollmentsPaths,
   },
   components: {
     securitySchemes: {

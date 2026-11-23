@@ -1,12 +1,19 @@
 import { Request, Response, NextFunction } from "express";
 import { verifyToken } from "../utils/jwt.utils";
 import { sendError } from "../utils/response.utils";
+import { authService } from "../services/auth.service";
 
-export function authMiddleware(
+const INVALID_TOKEN = "Invalid or expired token";
+
+/**
+ * Verifies the JWT and re-loads the principal from the DB on every request, so role changes,
+ * deactivations and password changes (tokenVersion bump) take effect immediately.
+ */
+export async function authMiddleware(
   req: Request,
   res: Response,
   next: NextFunction,
-): void {
+): Promise<void> {
   const authHeader = req.headers["authorization"];
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -14,13 +21,23 @@ export function authMiddleware(
     return;
   }
 
-  const token = authHeader.slice(7);
+  let claims: ReturnType<typeof verifyToken>;
+  try {
+    claims = verifyToken(authHeader.slice(7));
+  } catch {
+    sendError(res, INVALID_TOKEN, 401);
+    return;
+  }
 
   try {
-    const payload = verifyToken(token);
-    req.user = payload;
+    const principal = await authService.resolvePrincipal(claims.userId, claims.tv);
+    if (!principal) {
+      sendError(res, INVALID_TOKEN, 401);
+      return;
+    }
+    req.user = principal;
     next();
-  } catch {
-    sendError(res, "Invalid or expired token", 401);
+  } catch (err) {
+    next(err);
   }
 }

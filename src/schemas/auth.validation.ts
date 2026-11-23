@@ -1,20 +1,22 @@
 import { z } from "zod";
+import { emailString, LIMITS, passwordString } from "./common.validation";
+import { createUserBaseSchema, studentNeedsCareer } from "./user.validation";
 
-export const registerSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(8),
-  dni: z.string().min(7).max(10),
-  firstName: z.string().min(1),
-  lastName: z.string().min(1),
-  institutionId: z.string().min(1),
-  roleLevel: z.enum(["Directivo", "Preceptor", "Docente", "Alumno"]),
-});
+export const loginSchema = z
+  .object({
+    email: emailString,
+    password: z.string().min(1).max(LIMITS.PASSWORD),
+  })
+  .strict();
 
-export const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(1),
-  institutionId: z.string().min(1),
-});
+/** Administrative registration of a user that can log in immediately (password required). */
+export const registerSchema = createUserBaseSchema
+  .extend({ password: passwordString })
+  .strict()
+  .refine(studentNeedsCareer, {
+    message: "careerId is required for students",
+    path: ["careerId"],
+  });
 
-export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
+export type RegisterInput = z.infer<typeof registerSchema>;

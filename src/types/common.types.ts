@@ -13,9 +13,17 @@ export interface ApiResponse<T = unknown> {
   errors?: unknown;
 }
 
+/** Authenticated principal exposed as `req.user` (always re-loaded from the DB by authMiddleware). */
 export interface JwtPayload {
   userId: string;
-  institutionId: string;
   role: string;
   email: string;
+}
+
+/**
+ * Claims signed into the JWT. role/email are informational for the frontend only; the server
+ * re-loads them from the DB. `tv` must match User.tokenVersion for the token to be accepted.
+ */
+export interface TokenClaims extends JwtPayload {
+  tv: number;
 }

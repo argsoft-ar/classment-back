@@ -31,3 +31,18 @@ export function validateQuery(schema: ZodSchema) {
     next();
   };
 }
+
+export function validateParams(schema: ZodSchema) {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    const result = schema.safeParse(req.params);
+
+    if (!result.success) {
+      const errors = (result.error as ZodError).flatten();
+      sendError(res, "Validation failed", 400, errors);
+      return;
+    }
+
+    req.params = result.data as Record<string, string>;
+    next();
+  };
+}
