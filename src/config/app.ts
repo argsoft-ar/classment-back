@@ -15,9 +15,10 @@ export function createApp(): Application {
   // therefore the login rate limiter — sees the real client address. See README.
   app.disable("x-powered-by");
   app.use(helmet());
+  const allowAllOrigins = env.CORS_ORIGINS.includes("*");
   app.use(
     cors({
-      origin: env.CORS_ORIGINS,
+      origin: allowAllOrigins ? true : env.CORS_ORIGINS,
       methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
       allowedHeaders: ["Content-Type", "Authorization"],
     }),
