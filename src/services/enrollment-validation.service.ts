@@ -45,6 +45,7 @@ export const enrollmentValidationService = {
     modality: EnrollmentModality,
     correlatives: CorrelativeRequirement[],
     hasActiveEnrollment: boolean,
+    hasClosedEnrollment = false,
   ): EnrollmentValidationResult {
     return validateEnrollment({
       now: ctx.now,
@@ -54,6 +55,7 @@ export const enrollmentValidationService = {
       subject: { id: subject.id, name: subject.name },
       statuses: ctx.statuses,
       hasActiveEnrollment,
+      hasClosedEnrollment,
       correlatives,
       validateFinalCorrelatives: ctx.validateFinalCorrelatives,
     });

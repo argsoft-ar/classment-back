@@ -50,6 +50,19 @@ export const offeringsController = {
     }
   },
 
+  async recordGrades(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const enrollments = await offeringsService.recordGrades(
+        req.params["id"] as string,
+        req.body,
+        requireUser(req.user),
+      );
+      sendSuccess(res, enrollments, "Grades recorded");
+    } catch (err) {
+      next(err);
+    }
+  },
+
   async create(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
       const offering = await offeringsService.create(req.body);

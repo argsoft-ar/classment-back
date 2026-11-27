@@ -10,6 +10,7 @@ import {
 import {
   createOfferingSchema,
   listOfferingsQuerySchema,
+  recordOfferingGradesSchema,
   updateOfferingSchema,
 } from "../schemas/offering.validation";
 import { idParamSchema } from "../schemas/common.validation";
@@ -41,6 +42,14 @@ router.get(
   rbacMiddleware(...ADMIN_ROLES, RoleLevel.DOCENTE),
   validateParams(idParamSchema),
   offeringsController.findEnrollments,
+);
+
+router.put(
+  "/:id/grades",
+  rbacMiddleware(...ADMIN_ROLES, RoleLevel.DOCENTE),
+  validateParams(idParamSchema),
+  validateBody(recordOfferingGradesSchema),
+  offeringsController.recordGrades,
 );
 
 router.get(

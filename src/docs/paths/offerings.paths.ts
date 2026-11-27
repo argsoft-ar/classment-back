@@ -82,4 +82,22 @@ export const offeringsPaths = {
       responses: { 200: ok("Inscriptos", "Enrollment", true), ...authErrors, 404: err("NotFound") },
     },
   },
+  "/offerings/{id}/grades": {
+    put: {
+      tags: ["Offerings"],
+      summary: "Cargar o rectificar calificaciones de un acta (Docente: solo filas ACTIVA de ofertas asignadas; Directivo/SuperAdmin: incluye rectificación de CERRADA)",
+      security: bearer,
+      "x-roles": [...admin, "Docente"],
+      parameters: [pathParam("id")],
+      requestBody: jsonBody("RecordOfferingGradesBody"),
+      responses: {
+        200: ok("Nómina actualizada con calificaciones", "Enrollment", true),
+        400: err("ValidationError"),
+        ...authErrors,
+        404: err("NotFound"),
+        409: err("Conflict"),
+        422: err("BusinessRule"),
+      },
+    },
+  },
 };

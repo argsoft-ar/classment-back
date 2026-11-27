@@ -301,3 +301,19 @@ describe("Caso 7 — ventana temporal", () => {
     expect(isPeriodOpen(OPEN_PERIOD, NOW)).toBe(true);
   });
 });
+
+describe("Caso 8 — oferta ya evaluada", () => {
+  it("rechaza con ALREADY_GRADED si ya tiene una inscripción cerrada en la misma oferta", () => {
+    const out = validateEnrollment(
+      input({
+        kind: "FINAL",
+        subject: B,
+        modality: "REGULAR",
+        statuses: { B: "REGULARIZADA" },
+        hasClosedEnrollment: true,
+      }),
+    );
+    expect(out.allowed).toBe(false);
+    expect(out.reasons.map((r) => r.code)).toEqual(["ALREADY_GRADED"]);
+  });
+});

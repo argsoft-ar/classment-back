@@ -259,7 +259,7 @@ async function clearDatabase(): Promise<void> {
 }
 
 async function main(): Promise<void> {
-  console.log("🌱 Seeding Classment (Profesorado de Educación Física, Fase 0)...");
+  console.log("🌱 Seeding Classment (Profesorado de Educación Física, Fase 1)...");
   await clearDatabase();
 
   await prisma.institution.create({
@@ -268,9 +268,9 @@ async function main(): Promise<void> {
       cue: "9999999-00",
       address: "Av. Demo 1234, Ciudad Demo",
       levelType: "TERTIARY",
-      allowsPromotion: false,
+      allowsPromotion: true,
       passingGrade: 4,
-      promotionGrade: null,
+      promotionGrade: 7,
       validateFinalCorrelatives: true,
     },
   });
@@ -471,6 +471,7 @@ async function main(): Promise<void> {
     ["DIDIP", docente2.id, 30],
     ["DPGD", docente2.id, 31],
     ["AAM", docente3.id, 32],
+    ["HPLE", docente1.id, 33],
   ];
   await prisma.offering.createMany({
     data: finalOfferings.map(([key, teacherId, offsetDays]) => {
@@ -479,6 +480,62 @@ async function main(): Promise<void> {
       return { periodId: finals.id, subjectId: subjectIds[key], teacherId, examDate };
     }),
   });
+
+  // ── Seeded enrollments for Docente / Directivo grading demos ────────────────
+  // Note: alumno1 (Lucía Fernández) is left without enrollments to preserve her full demo flow.
+  const [, alumno2Id, alumno3Id, alumno4Id] = studentIds;
+  const createdCursadaOfferings = await prisma.offering.findMany({
+    where: { periodId: cursada.id },
+    select: { id: true, subjectId: true },
+  });
+  const cursadaBySubject = new Map(createdCursadaOfferings.map((o) => [o.subjectId, o.id]));
+
+  const createdFinalOfferings = await prisma.offering.findMany({
+    where: { periodId: finals.id },
+    select: { id: true, subjectId: true },
+  });
+  const finalBySubject = new Map(createdFinalOfferings.map((o) => [o.subjectId, o.id]));
+
+  const seedEnrollments = [
+    { offeringId: cursadaBySubject.get(subjectIds.DIDGEN), studentId: alumno2Id, modality: "REGULAR" as const, cursadaSubjectId: subjectIds.DIDGEN },
+    { offeringId: cursadaBySubject.get(subjectIds.CCSE), studentId: alumno3Id, modality: "REGULAR" as const, cursadaSubjectId: subjectIds.CCSE },
+    { offeringId: cursadaBySubject.get(subjectIds.RFILO), studentId: alumno4Id, modality: "REGULAR" as const, cursadaSubjectId: subjectIds.RFILO },
+    { offeringId: finalBySubject.get(subjectIds.HPLE), studentId: alumno4Id, modality: "REGULAR" as const, cursadaSubjectId: null },
+    { offeringId: finalBySubject.get(subjectIds.DIDIP), studentId: alumno3Id, modality: "REGULAR" as const, cursadaSubjectId: null },
+    { offeringId: finalBySubject.get(subjectIds.AAM), studentId: alumno4Id, modality: "REGULAR" as const, cursadaSubjectId: null },
+  ];
+
+  for (const item of seedEnrollments) {
+    if (!item.offeringId || !item.studentId) continue;
+    await prisma.enrollment.create({
+      data: {
+        offeringId: item.offeringId,
+        studentId: item.studentId,
+        modality: item.modality,
+        status: "ACTIVA",
+      },
+    });
+    if (item.cursadaSubjectId) {
+      await prisma.academicRecord.upsert({
+        where: {
+          studentId_subjectId: { studentId: item.studentId, subjectId: item.cursadaSubjectId },
+        },
+        create: {
+          studentId: item.studentId,
+          subjectId: item.cursadaSubjectId,
+          status: "CURSANDO",
+          origin: "CURSADA",
+        },
+        update: {
+          status: "CURSANDO",
+          origin: "CURSADA",
+          finalGrade: null,
+          regularizedAt: null,
+          approvedAt: null,
+        },
+      });
+    }
+  }
 
   console.log("✅ Seed completed");
   console.log(`   Career: ${career.name} (${Object.keys(SUBJECTS).length} subjects)`);

@@ -38,14 +38,18 @@ export const enrollmentsService = {
       throw new AppError(422, "La modalidad Libre solo está disponible para mesas de examen final");
     }
 
-    const [config, statuses, correlatives, active] = await Promise.all([
+    const [config, statuses, correlatives, existingEnrollments] = await Promise.all([
       institutionService.getConfig(),
       academicRecordsService.getStudentStatuses(studentId),
       enrollmentValidationService.loadCorrelatives([offering.subjectId]),
-      prisma.enrollment.findFirst({
-        where: { offeringId: offering.id, studentId, status: "ACTIVA" },
+      prisma.enrollment.findMany({
+        where: { offeringId: offering.id, studentId, status: { in: ["ACTIVA", "CERRADA"] } },
+        select: { status: true },
       }),
     ]);
+
+    const hasActive = existingEnrollments.some((e) => e.status === "ACTIVA");
+    const hasClosed = existingEnrollments.some((e) => e.status === "CERRADA");
 
     const validation = enrollmentValidationService.validate(
       { now: new Date(), statuses, validateFinalCorrelatives: config.validateFinalCorrelatives },
@@ -53,7 +57,8 @@ export const enrollmentsService = {
       offering.subject,
       dto.modality,
       correlatives.get(offering.subjectId) ?? [],
-      active !== null,
+      hasActive,
+      hasClosed,
     );
     if (!validation.allowed) {
       throw new AppError(422, "Inscripción rechazada", validation);
@@ -71,7 +76,7 @@ export const enrollmentsService = {
 
       if (lockedOffering.maxCapacity !== null) {
         const taken = await tx.enrollment.count({
-          where: { offeringId: offering.id, status: "ACTIVA" },
+          where: { offeringId: offering.id, status: { in: ["ACTIVA", "CERRADA"] } },
         });
         if (taken >= lockedOffering.maxCapacity) throw new AppError(409, "Cupo completo");
       }

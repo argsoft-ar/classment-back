@@ -19,6 +19,7 @@ export type RejectionCode =
   | "PERIOD_CLOSED"
   | "ALREADY_APPROVED"
   | "ALREADY_ENROLLED"
+  | "ALREADY_GRADED"
   | "ALREADY_REGULARIZED"
   | "NOT_REGULARIZED_FOR_FINAL"
   | "CORRELATIVE_NOT_MET";
@@ -61,6 +62,8 @@ export interface EnrollmentValidationInput {
   statuses: Readonly<Record<string, SubjectStatus>>;
   /** True when the student already has an ACTIVA enrollment in the same offering. */
   hasActiveEnrollment: boolean;
+  /** True when the student already has a CERRADA (graded) enrollment in the same offering. */
+  hasClosedEnrollment?: boolean;
   /** Rules of the target subject (any scope); the engine filters by `kind`. */
   correlatives: readonly CorrelativeRequirement[];
   validateFinalCorrelatives: boolean;

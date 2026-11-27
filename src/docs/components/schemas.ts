@@ -464,6 +464,7 @@ export const componentSchemas = {
         nullable: true,
         properties: { id, firstName: { type: "string" }, lastName: { type: "string" } },
       },
+      closedEnrollmentsCount: { type: "integer" },
     },
   },
   CreateOfferingBody: {
@@ -494,6 +495,7 @@ export const componentSchemas = {
           "PERIOD_CLOSED",
           "ALREADY_APPROVED",
           "ALREADY_ENROLLED",
+          "ALREADY_GRADED",
           "ALREADY_REGULARIZED",
           "NOT_REGULARIZED_FOR_FINAL",
           "CORRELATIVE_NOT_MET",
@@ -568,6 +570,31 @@ export const componentSchemas = {
       },
       createdAt: dateTime,
       offering: { $ref: "#/components/schemas/Offering" },
+    },
+  },
+  RecordOfferingGradesBody: {
+    type: "object",
+    required: ["entries"],
+    additionalProperties: false,
+    properties: {
+      entries: {
+        type: "array",
+        minItems: 1,
+        maxItems: 500,
+        items: {
+          type: "object",
+          required: ["enrollmentId", "result"],
+          additionalProperties: false,
+          properties: {
+            enrollmentId: id,
+            result: {
+              type: "string",
+              enum: ["REGULARIZADA", "APROBADA", "DESAPROBADA", "AUSENTE"],
+            },
+            grade: { type: "integer", minimum: 1, maximum: 10, nullable: true },
+          },
+        },
+      },
     },
   },
 };

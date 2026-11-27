@@ -91,6 +91,12 @@ export function validateEnrollment(
       message: `Ya tenés una inscripción activa en ${subject.name}`,
     });
   }
+  if (input.hasClosedEnrollment) {
+    gate.push({
+      code: "ALREADY_GRADED",
+      message: `Ya tenés una evaluación registrada en esta oferta de ${subject.name}`,
+    });
+  }
   if (gate.length > 0) return result(gate);
 
   if (input.kind === "CURSADA") {
